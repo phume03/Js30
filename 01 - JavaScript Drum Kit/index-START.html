@@ -59,7 +59,41 @@
   <audio data-key="76" src="sounds/tink.wav"></audio>
 
 <script>
+  console.log("loaded!");
+  //const audioFiles = document.getElementsByTagName(audio);
+  const keys = document.getElementsByClassName('key');
+  const sounds = document.getElementsByTagName('audio');  
+  function playSound(item) {
+    let keyToAnimate;
+    let soundToPlay;
+    const currentKey = item.keyCode;
+    Array.from(keys).forEach((element) => {
+      var name = element.getAttribute('data-key');
+      if (name == currentKey) {
+        keyToAnimate = element;
+      }
+    });
+    Array.from(sounds).forEach((element) => {
+      var name = element.getAttribute('data-key');
+      if (name == currentKey) {
+        soundToPlay = element;
+      }
+    });
+    if (soundToPlay) {
+      soundToPlay.currentTime = 0;
+      soundToPlay.play();
+    }
 
+    // KING KONG!!!
+    if (keyToAnimate) {
+      keyToAnimate.classList.add("playing");
+      keyToAnimate.addEventListener('transitionend', () => {keyToAnimate.classList.remove("playing");});
+    }  
+    return;
+  }
+
+  // triggers when ANY key is pressed — but only if the page has focus, calls on playSound with event data
+  window.addEventListener("keydown",playSound);
 </script>
 
 
