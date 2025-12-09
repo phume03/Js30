@@ -28,4 +28,4 @@ This project maintains this.
 
 + [JS Free Ebook](https://riptutorial.com/ebook/javascript)
 
-+ []()
++ [Using Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises)

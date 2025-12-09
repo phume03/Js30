@@ -7,10 +7,10 @@
   <link rel="icon" href="https://fav.farm/🔥" />
 </head>
 <body>
-  <video id="video" width="100%" height="auto" padding="10px" controls muted disablepictureinpicture disableremoteplayback autoplay>
+  <video id="video" width="100%" height="auto" padding="10px" controls disablepictureinpicture disableremoteplayback autoplay playsinline style="display:none;">
     <p>Your browser doesn't support video.</p>
   </video>
-  
+  <canvas id="canvas"></canvas>
 
   <div class="keys">
     <div data-key="65" class="key">
@@ -63,9 +63,64 @@
 
 <script>
   console.log("loaded!");
-  const videoDisplay = document.getElementById(video);
+  const videoDisplay = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext("2d");
+
   const keys = document.getElementsByClassName('key');
   const sounds = document.getElementsByTagName('audio');
+
+// Drum pad layout
+const drumKeys = [
+  { key: 65, label: "A", x: 0, y: 0, r: 0, active: false },
+  { key: 83, label: "S", x: 0, y: 0, r: 0, active: false },
+  { key: 68, label: "D", x: 0, y: 0, r: 0, active: false },
+  { key: 70, label: "F", x: 0, y: 0, r: 0, active: false },
+  { key: 71, label: "G", x: 0, y: 0, r: 0, active: false },
+  { key: 72, label: "H", x: 0, y: 0, r: 0, active: false },
+  { key: 74, label: "J", x: 0, y: 0, r: 0, active: false },
+  { key: 75, label: "K", x: 0, y: 0, r: 0, active: false },
+  { key: 76, label: "L", x: 0, y: 0, r: 0, active: false }
+];
+
+// Position drum circles after video loads
+function layoutDrumButtons() {
+  const cols = 3;
+  const rows = 3;
+  const spacingX = canvas.width / (cols + 1);
+  const spacingY = canvas.height / (rows + 1);
+  const radius = Math.min(spacingX, spacingY) * 0.3;
+
+  let index = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++, index++) {
+      drumKeys[index].x = spacingX * (c + 1);
+      drumKeys[index].y = spacingY * (r + 1);
+      drumKeys[index].r = radius;
+    }
+  }
+}
+
+function drawDrumButtons() {
+  for (let k of drumKeys) {
+    ctx.beginPath();
+    ctx.arc(k.x, k.y, k.r, 0, Math.PI * 2);
+
+    ctx.fillStyle = k.active ? "yellow" : "rgba(255,255,255,0.7)";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 4;
+
+    ctx.fill();
+    ctx.stroke();
+
+    // text
+    ctx.fillStyle = "black";
+    ctx.font = `${k.r * 0.7}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(k.label, k.x, k.y);
+  }
+}
 
   function playSound(item) {
     let keyToAnimate;
@@ -99,13 +154,34 @@
   // triggers when ANY key is pressed — but only if the page has focus, calls on playSound with event data
   window.addEventListener("keydown",playSound);
 
+  function drawFrame() {
+    ctx.drawImage(videoDisplay, 0, 0, canvas.width, canvas.height);
+    
+    drawDrumButtons();
+
+    // Keep rendering
+    requestAnimationFrame(drawFrame);
+    return;
+  }
+
   /**
    * The Navigator interface represents the state and the identity of the user agent. It allows scripts to 
    * query it and to register themselves to carry on some activities. A Navigator object can be retrieved 
    * using the read-only window.navigator property.
   **/
   navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => { video.srcObject = stream; })
+    .then(stream => { 
+      videoDisplay.srcObject = stream; 
+      videoDisplay.onloadedmetadata = () => {
+        // Match canvas size to video size
+        canvas.width = videoDisplay.videoWidth;
+        canvas.height = videoDisplay.videoHeight;
+
+        // Start drawing frames
+        layoutDrumButtons();
+        drawFrame();
+      };
+    })
     .catch(err => { console.error("Camera access denied:", err); }); 
 </script>
 
