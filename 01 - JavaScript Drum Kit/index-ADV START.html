@@ -5,51 +5,15 @@
   <title>JS Drum Kit</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="https://fav.farm/🔥" />
+  <script src="js/hands.js"></script>
+  <script src="js/camera_utils.js"></script>
+
 </head>
 <body>
   <video id="video" width="100%" height="auto" padding="10px" controls disablepictureinpicture disableremoteplayback autoplay playsinline style="display:none;">
     <p>Your browser doesn't support video.</p>
   </video>
   <canvas id="canvas"></canvas>
-
-  <div class="keys">
-    <div data-key="65" class="key">
-      <kbd>A</kbd>
-      <span class="sound">clap</span>
-    </div>
-    <div data-key="83" class="key">
-      <kbd>S</kbd>
-      <span class="sound">hihat</span>
-    </div>
-    <div data-key="68" class="key">
-      <kbd>D</kbd>
-      <span class="sound">kick</span>
-    </div>
-    <div data-key="70" class="key">
-      <kbd>F</kbd>
-      <span class="sound">openhat</span>
-    </div>
-    <div data-key="71" class="key">
-      <kbd>G</kbd>
-      <span class="sound">boom</span>
-    </div>
-    <div data-key="72" class="key">
-      <kbd>H</kbd>
-      <span class="sound">ride</span>
-    </div>
-    <div data-key="74" class="key">
-      <kbd>J</kbd>
-      <span class="sound">snare</span>
-    </div>
-    <div data-key="75" class="key">
-      <kbd>K</kbd>
-      <span class="sound">tom</span>
-    </div>
-    <div data-key="76" class="key">
-      <kbd>L</kbd>
-      <span class="sound">tink</span>
-    </div>
-  </div>
 
   <audio data-key="65" src="sounds/clap.wav"></audio>
   <audio data-key="83" src="sounds/hihat.wav"></audio>
@@ -66,72 +30,89 @@
   const videoDisplay = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext("2d");
+  const hands = new Hands({
+    locateFile: file => `js/${file}`
+  });
 
-  const keys = document.getElementsByClassName('key');
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+
+  hands.onResults(onHandResults);
+
+  const camera = new Camera(videoDisplay, {
+    onFrame: async () => {
+      await hands.send({ image: videoDisplay });
+    },
+    width: 640,
+    height: 480
+  });
+
+  camera.start();
+
+
   const sounds = document.getElementsByTagName('audio');
 
-// Drum pad layout
-const drumKeys = [
-  { key: 65, label: "A", x: 0, y: 0, r: 0, active: false },
-  { key: 83, label: "S", x: 0, y: 0, r: 0, active: false },
-  { key: 68, label: "D", x: 0, y: 0, r: 0, active: false },
-  { key: 70, label: "F", x: 0, y: 0, r: 0, active: false },
-  { key: 71, label: "G", x: 0, y: 0, r: 0, active: false },
-  { key: 72, label: "H", x: 0, y: 0, r: 0, active: false },
-  { key: 74, label: "J", x: 0, y: 0, r: 0, active: false },
-  { key: 75, label: "K", x: 0, y: 0, r: 0, active: false },
-  { key: 76, label: "L", x: 0, y: 0, r: 0, active: false }
-];
+  // Drum pad layout
+    const drumKeys = [
+      { key: 65, label: "A", x: 0, y: 0, r: 0, active: false },
+      { key: 83, label: "S", x: 0, y: 0, r: 0, active: false },
+      { key: 68, label: "D", x: 0, y: 0, r: 0, active: false },
+      { key: 70, label: "F", x: 0, y: 0, r: 0, active: false },
+      { key: 71, label: "G", x: 0, y: 0, r: 0, active: false },
+      { key: 72, label: "H", x: 0, y: 0, r: 0, active: false },
+      { key: 74, label: "J", x: 0, y: 0, r: 0, active: false },
+      { key: 75, label: "K", x: 0, y: 0, r: 0, active: false },
+      { key: 76, label: "L", x: 0, y: 0, r: 0, active: false }
+    ];
 
-// Position drum circles after video loads
-function layoutDrumButtons() {
-  const cols = 3;
-  const rows = 3;
-  const spacingX = canvas.width / (cols + 1);
-  const spacingY = canvas.height / (rows + 1);
-  const radius = Math.min(spacingX, spacingY) * 0.3;
+  // Position drum circles after video loads
+  function layoutDrumButtons() {
+    const cols = 9;
+    const rows = 1;
+    const spacingX = canvas.width / (cols + 1);
+    const spacingY = canvas.height / ( 4 ); // value of row switched to constant 3 to lower height of drums on screen
+    const radius = Math.min(spacingX, spacingY) * 0.3;
 
-  let index = 0;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++, index++) {
-      drumKeys[index].x = spacingX * (c + 1);
-      drumKeys[index].y = spacingY * (r + 1);
-      drumKeys[index].r = radius;
+    let index = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++, index++) {
+        drumKeys[index].x = spacingX * (c + 1);
+        drumKeys[index].y = spacingY * (r + 1);
+        drumKeys[index].r = radius;
+      }
     }
   }
-}
 
-function drawDrumButtons() {
-  for (let k of drumKeys) {
-    ctx.beginPath();
-    ctx.arc(k.x, k.y, k.r, 0, Math.PI * 2);
+  function drawDrumButtons() {
+    for (let k of drumKeys) {
+      ctx.beginPath();
+      ctx.arc(k.x, k.y, k.r, 0, Math.PI * 2);
 
-    ctx.fillStyle = k.active ? "yellow" : "rgba(255,255,255,0.7)";
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
+      ctx.fillStyle = k.active ? "yellow" : "rgba(255,255,255,0.7)";
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 4;
 
-    ctx.fill();
-    ctx.stroke();
+      ctx.fill();
+      ctx.stroke();
 
-    // text
-    ctx.fillStyle = "black";
-    ctx.font = `${k.r * 0.7}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(k.label, k.x, k.y);
+      // text
+      ctx.fillStyle = "black";
+      ctx.font = `${k.r * 0.7}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(k.label, k.x, k.y);
+    }
   }
-}
 
   function playSound(item) {
     let keyToAnimate;
     let soundToPlay;
     const currentKey = item.keyCode;
-    Array.from(keys).forEach((element) => {
-      var name = element.getAttribute('data-key');
-      if (name == currentKey) {
-        keyToAnimate = element;
-      }
-    });
+    
     Array.from(sounds).forEach((element) => {
       var name = element.getAttribute('data-key');
       if (name == currentKey) {
@@ -142,12 +123,7 @@ function drawDrumButtons() {
       soundToPlay.currentTime = 0;
       soundToPlay.play();
     }
-
-    // KING KONG!!!
-    if (keyToAnimate) {
-      keyToAnimate.classList.add("playing");
-      keyToAnimate.addEventListener('transitionend', () => {keyToAnimate.classList.remove("playing");});
-    }  
+ 
     return;
   }
 
@@ -155,8 +131,12 @@ function drawDrumButtons() {
   window.addEventListener("keydown",playSound);
 
   function drawFrame() {
+    ctx.save();   
+    ctx.translate(canvas.width, 0);     // Back to normal (so buttons draw correctly)       // Save the normal state
+    ctx.scale(-1, 1);    // Flip horizontally    
     ctx.drawImage(videoDisplay, 0, 0, canvas.width, canvas.height);
-    
+    ctx.restore();       // Back to normal (so buttons draw correctly)
+
     drawDrumButtons();
 
     // Keep rendering
@@ -179,10 +159,44 @@ function drawDrumButtons() {
 
         // Start drawing frames
         layoutDrumButtons();
+        
         drawFrame();
       };
     })
     .catch(err => { console.error("Camera access denied:", err); }); 
+
+function onHandResults(results) {
+  if (!results.multiHandLandmarks) return;
+
+  const hand = results.multiHandLandmarks[0];
+
+  // Index fingertip landmark (0–1 normalized)
+  const tip = hand[8];
+
+  // Convert to canvas-space
+  const rawX = tip.x * canvas.width;
+  const rawY = tip.y * canvas.height;
+
+  // IMPORTANT: Flip X to match mirrored video
+  const x = canvas.width - rawX;
+  const y = rawY;
+
+  // Collision detection
+  for (let key of drumKeys) {
+    const dx = x - key.x;
+    const dy = y - key.y;
+
+    if (Math.sqrt(dx*dx + dy*dy) < key.r) {
+      if (!key.active) {
+        key.active = true;
+        playSound({ keyCode: key.key });
+      }
+    } else {
+      key.active = false;
+    }
+  }
+}
+
 </script>
 
 
