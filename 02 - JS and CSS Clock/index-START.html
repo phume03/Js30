@@ -86,9 +86,9 @@
       var minuterotation = ((minute/60)*360)+offset; 
       var secondrotation = ((second/60)*360)+offset;      
 
-      hr_hand.style.transform="rotate("+hourrotation+"deg)"; 
-      min_hand.style.transform="rotate("+minuterotation+"deg)"; 
-      sec_hand.style.transform="rotate("+secondrotation+"deg)";
+      hr_hand[0].style.transform="rotate("+hourrotation+"deg)"; 
+      min_hand[0].style.transform="rotate("+minuterotation+"deg)"; 
+      sec_hand[0].style.transform="rotate("+secondrotation+"deg)";
 
       return false;      
     }
