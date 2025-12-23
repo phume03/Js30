@@ -82,9 +82,14 @@
       var second = currentTime.getSeconds();   
 
       const offset = 90;
+
       var hourrotation = ( ( (hour % 12) / 12) * 360) + offset;
       var minuterotation = ( (minute / 60) * 360) + offset; 
       var secondrotation = ( (second / 60) * 360) + offset;      
+
+      hr_hand.style.transformOrigin = "100%";
+      min_hand.style.transformOrigin = "100%";
+      sec_hand.style.transformOrigin = "100%";
 
       hr_hand.style.transform="rotate("+hourrotation+"deg)"; 
       min_hand.style.transform="rotate("+minuterotation+"deg)"; 
