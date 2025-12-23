@@ -68,7 +68,32 @@
   </style>
 
   <script>
+    console.log("Clock loaded...");
 
+    const hr_hand = document.getElementsByClassName('hour-hand');
+    const min_hand = document.getElementByClassName('min-hand');
+    const sec_hand = document.getElementByClassName('second-hand');
+
+    function timeUpdate() {
+      let currentTime = new Date();
+
+      var hour = currentTime.getHours(); 
+      var minute = currentTime.getMinutes(); 
+      var second = currentTime.getSeconds();   
+
+      const offset = 90;
+      var hourrotation = (((hour%12)/12)*360)+offset;
+      var minuterotation = ((minute/60)*360)+offset; 
+      var secondrotation = ((second/60)*360)+offset;      
+
+      hourhand.style.transform="rotate("+hourrotation+"deg)"; 
+      minutehand.style.transform="rotate("+minuterotation+"deg)"; 
+      secondhand.style.transform="rotate("+secondrotation+"deg)";
+
+      return false;      
+    }
+    
+    var time = setInterval(timeupdate, 1000);
 
   </script>
 </body>
