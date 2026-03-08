@@ -16,12 +16,25 @@
     <input id="blur" type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
 
     <label for="base">Base Color</label>
-    <input id="base" type="color" name="base" value="#ffc600">
+    <input id="base" type="color" name="base" value=#ffc600"">
   </div>
 
-  <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
+  <img src="./BREAK.png" width="500px" height="800px">
 
   <style>
+    /*
+    CSS variables can have a global or local scope. Global variables can be accessed through the entire 
+    document, while local variables can be used only inside the selector where it is declared. To create 
+    a global variable, declare it inside the :root selector. The :root selector matches the document's 
+    root element. To create a local variable, declare it inside the selector that is going to use it. A 
+    CSS variable name must begin with two dashes (--) and is case sensitive!
+    */
+
+    :root {
+      --primary-base-color: #ffc600; /* global scope */
+      --image-border-spacing: 10px;
+      --image-blur: 10%; 
+    }
 
     /*
       misc styles, nothing to do with CSS variables
@@ -43,6 +56,18 @@
     input {
       width: 100px;
     }
+
+    #spacing {
+
+    }
+
+    #blur {
+    
+    }
+
+    #base {
+    }
+
   </style>
 
   <script>
