@@ -16,10 +16,10 @@
     <input id="blur" type="range" name="blur" min="0" max="25" value="10" data-sizing="px">
 
     <label for="base">Base Color</label>
-    <input id="base" type="color" name="base" value=#ffc600"">
+    <input id="base" type="color" name="base" value="#ffc600">
   </div>
 
-  <img src="./BREAK.png" width="500px" height="800px">
+  <img src="./BREAK.png" width="500px">
 
   <style>
     /*
@@ -33,7 +33,7 @@
     :root {
       --primary-base-color: #ffc600; /* global scope */
       --image-border-spacing: 10px;
-      --image-blur: 10%; 
+      --image-blur: 10px; 
     }
 
     /*
@@ -57,20 +57,40 @@
       width: 100px;
     }
 
-    #spacing {
-
-    }
-
-    #blur {
-    
-    }
-
-    #base {
+    img {
+      border: 10px var(--primary-base-color) solid;
+      padding: var(--image-border-spacing);
+      filter: blur(var(--image-blur)px);
+      -webkit-filter: blur(var(--image-blur));
     }
 
   </style>
 
   <script>
+    // Get the root element
+    var r = document.querySelector(':root');
+    // var rs = getComputedStyle(r);
+    // rs.getPropertyValue('--primary-base-color');
+    // r.style.setProperty('--primary-base-color', 'green');
+
+    // on change breaks the DOM, oninput preferred. Final changes some text css, i don't.
+
+    var imageBase = document.getElementById("base");
+    imageBase.oninput = function() {
+      r.style.setProperty('--primary-base-color', imageBase.value);
+    };    
+
+    var imageSpace = document.getElementById("spacing");
+    imageSpace.oninput = function() {
+      r.style.setProperty('--image-border-spacing', imageSpace.value + imageSpace.dataset.sizing);
+    };
+
+    var imageBlur = document.getElementById("blur");
+    imageBlur.oninput = function() {
+      r.style.setProperty('--image-blur', imageBlur.value + imageBlur.dataset.sizing);
+    };
+
+
   </script>
 
 </body>
